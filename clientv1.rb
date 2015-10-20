@@ -17,3 +17,15 @@ s5.sendmsg("here5\n")
 s6.sendmsg("here6\n")
 s7.sendmsg("here7\n")
 s8.sendmsg("here8\n")
+<<<<<<< HEAD
+=======
+
+s1.close
+s2.close
+s3.close
+s4.close
+s5.close
+s6.close
+s7.close
+s8.close
+>>>>>>> Closed connections on client side
