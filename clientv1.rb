@@ -1,6 +1,5 @@
 require 'socket'
 
-
 s1 = TCPSocket.new 'localhost', 3000
 s2 = TCPSocket.new 'localhost', 3000
 s3 = TCPSocket.new 'localhost', 3000
@@ -18,4 +17,3 @@ s5.sendmsg("here5\n")
 s6.sendmsg("here6\n")
 s7.sendmsg("here7\n")
 s8.sendmsg("here8\n")
-
