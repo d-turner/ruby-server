@@ -6,16 +6,18 @@ class SocketServer
   def initialize(port)
     @server = TCPServer.new port
     @max_threads = 4
+    @max = 50
     @que = Queue.new
-    @max = 2
   end
 
   def run
     x = Thread.new {
-      @server.listen(@max)
-      while true
-        if @que.length < @max
+      while true do
+        if @que.length > @max
+          @server.accept
+        else
           @que.push(@server.accept)
+          puts "add now"
         end
       end
     }
@@ -23,7 +25,7 @@ class SocketServer
       Thread.new do
         begin
           while true
-            sleeps = 3
+            sleeps = 4
             client = @que.pop(false)
             msg = 'Thread ' << i.to_s
             msg << ': ' << client.readline
@@ -36,8 +38,11 @@ class SocketServer
         end
       end
     }
+    while true
+      puts "Que length : #{@que.length}"
+      sleep 3
+    end
     workers.map(&:join)
-    x.join
       # @workers.each {|thr|
       #   if thr.status == 'sleep'
       #     thr.start(@que.pop(false)) { |newClient|

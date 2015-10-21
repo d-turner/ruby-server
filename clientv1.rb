@@ -6,5 +6,6 @@ while true
   soc = TCPSocket.new 'localhost', 3000
   soc.sendmsg("Here #{x}\n")
   x = x + 1
+  puts "At #{x}"
 end
 
