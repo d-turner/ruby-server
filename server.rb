@@ -4,7 +4,8 @@ require 'socket'
 class SocketServer
 
   def initialize(port)
-    @server = TCPServer.new port
+    @port = port
+    @server = TCPServer.new @port
     @max_threads = 4
     @max = 50
     @que = Queue.new
@@ -25,12 +26,24 @@ class SocketServer
       Thread.new do
         begin
           while true
-            sleeps = 4
+            sleeps = 1
             client = @que.pop(false)
-            msg = 'Thread ' << i.to_s
-            msg << ': ' << client.readline
-
+            msg = "Thread #{i}"
+            readLine = client.readline
+            msg << ': ' << readLine
             puts msg
+            if readLine == "KILL_SERVICE\n"
+              puts "Killing"
+              Thread.list.each do |thread|
+                thread.exit
+              end
+            elsif readLine.start_with?("HELO")
+              reply = readLine.concat("Port: #{@port}\nStudentID: 33d4fcfd69df0c9bbbd0bd54ce854663db8238836b6faec70a00cf9e835a6bd1\n") 
+              client.write(reply)
+              client.flush
+            else 
+              puts "Neither"
+            end
             sleep sleeps
             client.close
           end
@@ -38,11 +51,8 @@ class SocketServer
         end
       end
     }
-    while true
-      puts "Que length : #{@que.length}"
-      sleep 3
-    end
     workers.map(&:join)
+    puts "Quiting"
       # @workers.each {|thr|
       #   if thr.status == 'sleep'
       #     thr.start(@que.pop(false)) { |newClient|
@@ -64,7 +74,7 @@ end
 
 port = 3000
 if ARGV[0] == nil
-  puts "No Port Specified using default 3001"
+  puts "No Port Specified using default 3000"
 else
   port = ARGV[0]
 end
