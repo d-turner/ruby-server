@@ -30,21 +30,24 @@ class SocketServer
             sleeps = 1
             client = @que.pop(false)
             msg = "Thread #{i}"
-            readLine = client.readline
-            msg << ': ' << readLine
-            puts msg
-            if readLine == "KILL_SERVICE\n"
-              puts "Killing"
-              Thread.list.each do |thread|
-                thread.exit
+            while true
+              readLine = client.readline
+              puts "#{readLine}"
+              msg << ': ' << readLine
+              puts msg
+              if readLine == "KILL_SERVICE\n"
+                client.close
+                puts "Killing"
+                Thread.list.each do |thread|
+                  thread.exit
+                end
+              elsif readLine.start_with?("HELO")
+                reply = readLine.concat("IP:#{@ip}\nPort:#{@port}\nStudentID:33d4fcfd69df0c9bbbd0bd54ce854663db8238836b6faec70a00cf9e835a6bd1\n") 
+                client.write(reply)
+                client.flush
               end
-            elsif readLine.start_with?("HELO")
-              reply = readLine.concat("IP: #{@ip}\nPort: #{@port}\nStudentID: 33d4fcfd69df0c9bbbd0bd54ce854663db8238836b6faec70a00cf9e835a6bd1\n") 
-              client.write(reply)
-              client.flush
+              sleep sleeps
             end
-            sleep sleeps
-            client.close
           end
         rescue ThreadError
         end
