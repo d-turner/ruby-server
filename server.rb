@@ -10,10 +10,7 @@ class SocketServer
     @max = 1_000
     @que = Queue.new
     addr_infos = Socket.ip_address_list
-    @ip = ""
-    addr_infos.each do |addr_info|
-       @ip = addr_info.ip_address
-    end
+    @ip = addr_infos[1].ip_address.to_s
   end
 
   def run
