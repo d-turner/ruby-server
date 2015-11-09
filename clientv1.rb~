@@ -1,0 +1,25 @@
+require 'socket'
+require 'thread'
+
+x = 0
+for i in 0..10
+  soc = TCPSocket.new 'localhost', 3000
+  if i == 2
+    soc.sendmsg("HELO anythin\n")
+    data = soc.recv( 1024 )
+    puts data
+  elsif i == 10
+    soc.sendmsg("KILL_SERVICE\n")
+  elsif i == 7
+    z = 0
+    while z < 100
+      soc.sendmsg("Testing #{z}\n")
+      z = z + 1
+      sleep 1
+    end
+  else
+    soc.sendmsg("Here #{x}\n")
+  end
+  x = x + 1
+end
+
