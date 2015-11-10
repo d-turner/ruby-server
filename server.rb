@@ -11,6 +11,7 @@ class SocketServer
     @que = Queue.new
     addr_infos = Socket.ip_address_list
     @ip = addr_infos[1].ip_address.to_s
+    @main = Thread.current
   end
 
   def run
@@ -23,44 +24,36 @@ class SocketServer
         end
       end
     }
-    workers = (0...@max_threads).map {|i|
-      Thread.new do
-        begin
-          while true
-            sleeps = 1
-            client = @que.pop(false)
-            msg = "Thread #{i}"
-            while true
-              readLine = client.readline
-              puts "#{readLine}"
-              msg << ': ' << readLine
-              puts msg
-              if readLine == "KILL_SERVICE\n"
-                client.close
-                puts "Killing"
-                Thread.list.each do |thread|
-                  thread.exit
-                end
-              elsif readLine.start_with?("HELO")
-                reply = readLine.concat("IP:#{@ip}\nPort:#{@port}\nStudentID:33d4fcfd69df0c9bbbd0bd54ce854663db8238836b6faec70a00cf9e835a6bd1\n") 
-                client.write(reply)
-                client.flush
-              end
-              sleep sleeps
-            end
-          end
-        rescue ThreadError
-        end
-      end
-    }
-    workers.map(&:join)
+    threads = @max_threads.times.map do
+      Thread.new{connection}
+    end
+    threads.map &:join
     puts "Quiting"
   end
 
   def connection
-
+    begin
+      while true
+        client = @que.pop(false)
+          while true
+            readLine = client.readline
+            if readLine == "KILL_SERVICE\n"
+              client.close
+              puts "Killing"
+              Thread.list.each do |thread|
+                thread.exit unless thread == @main
+              end
+            elsif readLine.start_with?("HELO")
+              reply = readLine.concat("IP:#{@ip}\nPort:#{@port}\nStudentID:33d4fcfd69df0c9bbbd0bd54ce854663db8238836b6faec70a00cf9e835a6bd1\n")
+              client.write(reply)
+              client.flush
+            end
+          end
+        end
+      rescue ThreadError
+      end
+    end
   end
-end
 
 port = 3000
 if ARGV[0] == nil
